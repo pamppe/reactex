@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from 'react';
-import {FlatList, View, Text, Image} from 'react-native';
+import {FlatList} from 'react-native';
+import ListItem from './ListItem';
+import {useEffect, useState} from 'react';
 
 const url =
   'https://raw.githubusercontent.com/mattpe/wbma/master/docs/assets/test.json';
@@ -11,9 +12,10 @@ const List = () => {
     try {
       const response = await fetch(url);
       const json = await response.json();
+      // console.log(json);
       setMediaArray(json);
     } catch (error) {
-      console.error('Error loading media:', error);
+      console.error('loadMedia failed', error);
     }
   };
 
@@ -21,24 +23,10 @@ const List = () => {
     loadMedia();
   }, []);
 
-  const keyExtractor = (_, index) => index.toString();
-
-  const renderItem = ({item}) => (
-    <View style={{padding: 16}}>
-      <Image
-        source={{uri: item.thumbnails.w160}}
-        style={{width: 160, height: 160}}
-      />
-      <Text>{item.title}</Text>
-      <Text>{item.description}</Text>
-    </View>
-  );
-
   return (
     <FlatList
       data={mediaArray}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
+      renderItem={({item}) => <ListItem singleMedia={item} />}
     />
   );
 };
