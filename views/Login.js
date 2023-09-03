@@ -1,24 +1,35 @@
 import React, {useContext, useEffect} from 'react';
-import {StyleSheet, View, Text, Button} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Keyboard,
+} from 'react-native';
 import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useAuthentication} from '../hooks/ApiHooks';
+import {useUser} from '../hooks/ApiHooks';
+import LoginForm from '../components/LoginFrom';
 
 const Login = ({navigation}) => {
   // props is needed for navigation
-  const {setIsLoggedIn} = useContext(MainContext);
-  const {postLogin} = useAuthentication();
+  const {setIsLoggedIn, setUser} = useContext(MainContext);
+  const {getUserByToken} = useUser();
 
   const checkToken = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       // hardcoded token validation
-      if (token === 'abcde') {
+      const userData = await getUserByToken(token);
+      console.log('userdata', userData);
+      if (userData) {
         setIsLoggedIn(true);
+        setUser(userData);
       }
     } catch (error) {
-      console.error(error);
+      console.log('checkToken', error);
     }
   };
 
@@ -26,28 +37,20 @@ const Login = ({navigation}) => {
     checkToken();
   }, []);
 
-  const logIn = async () => {
-    console.log('Login button pressed');
-    try {
-      const loginResponse = await postLogin({
-        username: 'masa',
-        password: 'examplepass',
-      });
-      console.log('login response', loginResponse);
-      // TODO: fix dofetch() to display errors from API (e.g. when bad user/pw)
-      // use loginResponse.user for storing token & userdata
-      await AsyncStorage.setItem('userToken', 'abcde');
-      setIsLoggedIn(true);
-    } catch (error) {
-      console.error(error);
-      // TODO: notify user about failed login?
-    }
-  };
   return (
-    <View style={styles.container}>
-      <Text>Login</Text>
-      <Button title="Sign in!" onPress={logIn} />
-    </View>
+    <TouchableOpacity
+      onPress={() => Keyboard.dismiss()}
+      style={{flex: 1}}
+      activeOpacity={1}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <Text>Login</Text>
+        <LoginForm />
+      </KeyboardAvoidingView>
+    </TouchableOpacity>
   );
 };
 
