@@ -1,12 +1,12 @@
 import {Button, Text, TextInput, View} from 'react-native';
 import {Controller, useForm} from 'react-hook-form';
-import {useAuthentication} from '../hooks/ApiHooks';
+import {useUser} from '../hooks/ApiHooks';
 import {useContext} from 'react';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterForm = () => {
-  const {postUser} = useAuthentication();
+  const {postUser} = useUser();
   const {setIsLoggedIn, setUser} = useContext(MainContext);
 
   const {
