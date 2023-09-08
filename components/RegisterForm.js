@@ -13,7 +13,6 @@ const RegisterForm = () => {
   const {
     control,
     handleSubmit,
-    getValues,
     formState: {errors},
   } = useForm({
     defaultValues: {
@@ -91,28 +90,6 @@ const RegisterForm = () => {
           />
         )}
         name="password"
-      />
-      <Controller
-        control={control}
-        rules={{
-          required: {value: true, message: 'This field is required.'},
-          validate: (value) => {
-            const {password} = getValues();
-            console.log('password validator', password);
-            return value === password ? true : 'Password dont match';
-          },
-        }}
-        render={({field: {onChange, onBlur, value}}) => (
-          <Input
-            placeholder="confirm password"
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry={true}
-            errorMessage={errors.confirm_password?.message}
-          />
-        )}
-        name="confirm_password"
       />
       <Controller
         control={control}
