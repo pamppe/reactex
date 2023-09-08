@@ -1,17 +1,19 @@
-import {Button, Text, TextInput, View} from 'react-native';
+import {Text} from 'react-native';
 import {Controller, useForm} from 'react-hook-form';
 import {useUser} from '../hooks/ApiHooks';
 import {useContext} from 'react';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Card, Button, Input} from '@rneui/themed';
 
 const RegisterForm = () => {
-  const {postUser} = useUser();
+  const {postUser, checkUsername} = useUser();
   const {setIsLoggedIn, setUser} = useContext(MainContext);
 
   const {
     control,
     handleSubmit,
+    getValues,
     formState: {errors},
   } = useForm({
     defaultValues: {
@@ -20,6 +22,7 @@ const RegisterForm = () => {
       email: '', // Add the email field
       full_name: '', // Add the full_name field
     },
+    mode: 'onBlur',
   });
 
   const signIn = async (userData) => {
@@ -39,19 +42,33 @@ const RegisterForm = () => {
   };
 
   return (
-    <View>
+    <Card>
+      <Card.Title>Registration Form</Card.Title>
       <Controller
         control={control}
         rules={{
-          required: true,
+          required: {value: true, message: 'This field is required.'},
+          minLength: {
+            value: 3,
+            message: 'This field must be at least 3 characters long.',
+          },
+          validate: async (value) => {
+            try {
+              const isAvailable = await checkUsername(value);
+              console.log('username validator', value, isAvailable);
+              return isAvailable ? isAvailable : 'Username is already taken.';
+            } catch (error) {
+              console.error(error);
+            }
+          },
         }}
         render={({field: {onChange, onBlur, value}}) => (
-          <TextInput
+          <Input
             placeholder="Username"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            autoCapitalize="none"
+            errorMessage={errors.username?.message}
           />
         )}
         name="username"
@@ -64,42 +81,70 @@ const RegisterForm = () => {
           maxLength: 100,
         }}
         render={({field: {onChange, onBlur, value}}) => (
-          <TextInput
+          <Input
             placeholder="password"
             secureTextEntry
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
+            errorMessage={errors.password?.message}
           />
         )}
         name="password"
       />
-
       <Controller
         control={control}
         rules={{
-          required: true,
+          required: {value: true, message: 'This field is required.'},
+          validate: (value) => {
+            const {password} = getValues();
+            console.log('password validator', password);
+            return value === password ? true : 'Password dont match';
+          },
         }}
         render={({field: {onChange, onBlur, value}}) => (
-          <TextInput
+          <Input
+            placeholder="confirm password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry={true}
+            errorMessage={errors.confirm_password?.message}
+          />
+        )}
+        name="confirm_password"
+      />
+      <Controller
+        control={control}
+        rules={{
+          required: {value: true, message: 'This field is required'},
+          pattern: {
+            value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            message: 'must be a valid email address',
+          },
+        }}
+        render={({field: {onChange, onBlur, value}}) => (
+          <Input
             placeholder="email"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
             autoCapitalize="none"
+            errorMessage={errors.email?.message}
           />
         )}
         name="email"
       />
-      {errors.email && <Text>This is required.</Text>}
-
       <Controller
         control={control}
         rules={{
-          required: false,
+          minLength: {
+            value: 3,
+            message: 'This field must be at least 3 characters long.',
+          },
         }}
         render={({field: {onChange, onBlur, value}}) => (
-          <TextInput
+          <Input
             placeholder="full name"
             onBlur={onBlur}
             onChangeText={onChange}
@@ -111,7 +156,7 @@ const RegisterForm = () => {
       />
 
       <Button title="Submit" onPress={handleSubmit(signIn)} />
-    </View>
+    </Card>
   );
 };
 

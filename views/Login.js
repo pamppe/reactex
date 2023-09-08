@@ -1,12 +1,11 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
-  StyleSheet,
-  Text,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
+import {Button} from '@rneui/themed';
 import PropTypes from 'prop-types';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,6 +17,8 @@ const Login = ({navigation}) => {
   // props is needed for navigation
   const {setIsLoggedIn, setUser} = useContext(MainContext);
   const {getUserByToken} = useUser();
+  const [toggleRegister, setToggleRegister] = useState(false);
+  const [buttonTitle, setButtonTitle] = useState('or Register');
 
   const checkToken = async () => {
     try {
@@ -46,26 +47,19 @@ const Login = ({navigation}) => {
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
       >
-        <Text>Login</Text>
-        <LoginForm />
-        <Text>Register</Text>
-        <RegisterForm />
+        {toggleRegister ? <RegisterForm /> : <LoginForm />}
+        <Button
+          onPress={() => {
+            setToggleRegister(!toggleRegister);
+          }}
+        >
+          {toggleRegister ? 'or Login' : 'or Register'}
+        </Button>
       </KeyboardAvoidingView>
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-
 Login.propTypes = {
   navigation: PropTypes.object,
 };
