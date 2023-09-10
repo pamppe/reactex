@@ -1,11 +1,12 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Button, Text} from 'react-native';
+import {Button, ScrollView, Text} from 'react-native';
 import {MainContext} from '../contexts/MainContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTag} from '../hooks/ApiHooks';
 import {mediaUrl} from '../utils/app-config';
 import {Card} from '@rneui/themed';
 import {Icon, ListItem} from '@rneui/base';
+import ProfileForm from '../components/ProfileForm';
 
 const Profile = (props) => {
   const [avatar, setAvatar] = useState('http://placekitten.com/640');
@@ -35,24 +36,27 @@ const Profile = (props) => {
     loadAvatar();
   }, []);
   return (
-    <Card>
-      <Text>Profile view</Text>
-      <Card.Title>{user.username}</Card.Title>
-      <Card.Image source={{uri: avatar}} />
-      <ListItem>
-        <Icon name="email" />
-        <ListItem.Title>{user.email}</ListItem.Title>
-      </ListItem>
-      <ListItem>
-        <Icon name="person" />
-        <ListItem.Title>{user.full_name}</ListItem.Title>
-      </ListItem>
-      <ListItem>
-        <ListItem.Title>{user.user_id}</ListItem.Title>
-      </ListItem>
-      <Card.Divider />
-      <Button title="Log out" onPress={logOut} />
-    </Card>
+    <ScrollView>
+      <Card>
+        <Text>Profile view</Text>
+        <Card.Title>{user.username}</Card.Title>
+        <Card.Image source={{uri: avatar}} />
+        <ListItem>
+          <Icon name="email" />
+          <ListItem.Title>{user.email}</ListItem.Title>
+        </ListItem>
+        <ListItem>
+          <Icon name="person" />
+          <ListItem.Title>{user.full_name}</ListItem.Title>
+        </ListItem>
+        <ListItem>
+          <ListItem.Title>{user.user_id}</ListItem.Title>
+        </ListItem>
+        <Card.Divider />
+        <Button title="Log out" onPress={logOut} />
+        <ProfileForm />
+      </Card>
+    </ScrollView>
   );
 };
 

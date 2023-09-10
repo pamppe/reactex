@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useContext} from 'react';
 import {MainContext} from '../contexts/MainContext';
 import {Card, Button, Input} from '@rneui/themed';
+import {Alert} from 'react-native';
 
 const LoginForm = () => {
   const {postLogin} = useAuthentication();
@@ -31,7 +32,7 @@ const LoginForm = () => {
       setUser(loginResponse.user);
     } catch (error) {
       console.error(error);
-      // TODO: notify user about failed login?
+      Alert.alert('Error logging in', error.message);
     }
   };
 
