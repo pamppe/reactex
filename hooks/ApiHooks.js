@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
 import {apiUrl} from '../utils/app-config';
 import {doFetch} from '../utils/functions';
-import {error} from '@babel/eslint-parser/lib/convert';
+import {error} from '@babel/eslint-parser/lib/convert/index.cjs';
 
 const useMedia = () => {
   const [mediaArray, setMediaArray] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const loadMedia = async () => {
     try {
@@ -28,12 +29,25 @@ const useMedia = () => {
     loadMedia();
   }, []);
 
-  return {mediaArray};
+  const postMedia = async (mediaData, token) => {
+    setLoading(true);
+    const options = {
+      method: 'POST',
+      headers: {
+        'x-access-token': token,
+      },
+      body: mediaData,
+    };
+    const uploadResult = await doFetch(apiUrl + 'media', options);
+    setLoading(false);
+    return uploadResult;
+  };
+
+  return {mediaArray, postMedia, loading};
 };
 
 const useAuthentication = () => {
   const postLogin = async (user) => {
-    // console.log(user);
     return await doFetch(apiUrl + 'login', {
       method: 'POST',
       headers: {
@@ -67,7 +81,6 @@ const useUser = () => {
   };
 
   const putUser = async (userData, token) => {
-    console.log(userData, token);
     const options = {
       method: 'PUT',
       headers: {
@@ -84,7 +97,7 @@ const useUser = () => {
       const response = await doFetch(`${apiUrl}users/username/${username}`);
       return response.available;
     } catch {
-      throw new Error('checkUsername failed', error.message);
+      throw new Error('checkusername Error', error.message);
     }
   };
 
@@ -96,7 +109,7 @@ const useTag = () => {
     try {
       return await doFetch(apiUrl + 'tags/' + tag);
     } catch (error) {
-      throw new Error('getFilesBytag failed', error.message);
+      throw new Error('getFilesByTag error', error.message);
     }
   };
   return {getFilesByTag};

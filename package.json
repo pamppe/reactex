@@ -18,6 +18,8 @@
     "@rneui/themed": "^4.0.0-rc.8",
     "eslint-plugin-react-native": "^4.0.0",
     "expo": "~49.0.8",
+    "expo-av": "^13.4.1",
+    "expo-image-picker": "^14.3.2",
     "expo-status-bar": "~1.6.0",
     "prop-types": "^15.8.1",
     "react": "18.2.0",
