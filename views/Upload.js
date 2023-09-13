@@ -1,20 +1,25 @@
 import {Card, Input} from '@rneui/themed';
 import {Controller, useForm} from 'react-hook-form';
 import {Button} from '@rneui/base';
-import {StyleSheet} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import {useState} from 'react';
-import {placeholderImage} from '../utils/app-config';
+import {useContext, useState} from 'react';
+import {appId, placeholderImage} from '../utils/app-config';
 import {Video} from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useMedia} from '../hooks/ApiHooks';
+import {useMedia, useTag} from '../hooks/ApiHooks';
+import PropTypes from 'prop-types';
+import {MainContext} from '../contexts/MainContext';
 
-const Upload = () => {
+const Upload = ({navigation}) => {
+  const {update, setUpdate} = useContext(MainContext);
   const [image, setImage] = useState(placeholderImage);
   const [type, setType] = useState('image');
   const {postMedia, loading} = useMedia();
+  const {postTag} = useTag();
   const {
     control,
+    reset,
     handleSubmit,
     formState: {errors},
   } = useForm({
@@ -22,6 +27,7 @@ const Upload = () => {
       title: '',
       description: '',
     },
+    mode: 'onBlur',
   });
 
   const upload = async (uploadData) => {
@@ -44,9 +50,33 @@ const Upload = () => {
       const token = await AsyncStorage.getItem('userToken');
       const response = await postMedia(formData, token);
       console.log('lataus', response);
+      const tagResponse = await postTag(
+        {
+          file_id: response.file_id,
+          tag: appId,
+        },
+        token,
+      );
+      console.log('postTag', tagResponse);
+      setUpdate(!update);
+      Alert.alert('Upload', `${response.message} (id: ${response.file_id})`, [
+        {
+          text: 'OK',
+          onPress: () => {
+            setImage(placeholderImage);
+            reset();
+            navigation.navigate('Home');
+          },
+        },
+      ]);
     } catch (error) {
       console.log(error.message);
     }
+  };
+
+  const resetForm = () => {
+    setImage(placeholderImage);
+    reset();
   };
 
   const pickImage = async () => {
@@ -56,8 +86,9 @@ const Upload = () => {
       aspect: [4, 3],
     });
 
-    console.log(result);
-
+    // PURKKA "key cancelled" in the image picker result is depracated -warningIn
+    // delete result.cancelled;
+    // console.log(result);
     if (!result.canceled) {
       setImage(result.assets[0].uri);
       setType(result.assets[0].type);
@@ -114,7 +145,15 @@ const Upload = () => {
         name="description"
       />
       <Button title="Choose Media" onPress={pickImage} />
-      <Button loading={loading} title="Upload" onPress={handleSubmit(upload)} />
+      <Button title="Reset" type="clear" color={'error'} onPress={resetForm} />
+      <Button
+        loading={loading}
+        disabled={
+          image === placeholderImage || errors.title || errors.description
+        }
+        title="Upload"
+        onPress={handleSubmit(upload)}
+      />
     </Card>
   );
 };
@@ -128,5 +167,9 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
 });
+
+Upload.propTypes = {
+  navigation: PropTypes.object,
+};
 
 export default Upload;
